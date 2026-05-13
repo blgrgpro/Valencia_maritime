@@ -9,24 +9,133 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
-    body { background: #fafafa; margin: 0; }
-    .entity-row { transition: background .08s; cursor: default; }
-    .entity-row:hover { background: #f5f5f5; }
-    .entity-card { transition: box-shadow .15s, transform .15s; cursor: default; }
-    .entity-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
-    .cat-tab { transition: color .1s, border-color .1s; cursor: pointer; white-space: nowrap; }
-    input[type="text"]:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.06); border-color: #111; }
+    html { scroll-behavior: smooth; }
+    body { background: #0a1628; margin: 0; color: #fff; }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; height: 300px;
+      background: url('https://images.unsplash.com/photo-1707635649895-242ea947e888?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      overflow: hidden;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, rgba(10,22,40,0.75) 0%, rgba(10,22,40,0.45) 40%, rgba(10,22,40,0.92) 88%, #0a1628 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: calc(100% - 60px); padding: 0 20px; text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(240,165,0,0.15); border: 1px solid rgba(240,165,0,0.35);
+      color: #f0a500; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 14px;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 5vw, 50px); font-weight: 800;
+      color: #fff; line-height: 1.1; margin-bottom: 10px;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+    }
+    .hero-subtitle { font-size: 14px; color: rgba(255,255,255,0.6); letter-spacing: .02em; }
+
+    /* ── Wave ── */
+    .wave-wrap { position: absolute; bottom: -1px; left: 0; right: 0; height: 62px; overflow: hidden; }
+    .wave-svg { width: 200%; height: 62px; animation: waveSlide 14s linear infinite; }
+    @keyframes waveSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── Sticky header ── */
+    .site-header {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(10,22,40,0.96); backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(0,102,204,0.18);
+    }
+
+    /* ── Main panel ── */
+    .main-panel {
+      background: rgba(15,32,64,0.55); backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,102,204,0.14); border-radius: 20px; overflow: hidden;
+    }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      background: rgba(10,22,40,0.5); border-bottom: 1px solid rgba(0,102,204,0.1);
+      padding: 12px 16px; display: flex; gap: 6px; overflow-x: auto;
+    }
+    .tab-bar::-webkit-scrollbar { height: 0; }
+    .cat-tab {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+      transition: all 0.15s ease; background: none; outline: none;
+    }
+    .cat-tab-active { background: #f0a500; color: #0a1628; border-color: #f0a500; }
+    .cat-tab-active .tab-count { background: rgba(10,22,40,0.3); color: #0a1628; }
+    .cat-tab-inactive { color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.1); }
+    .cat-tab-inactive:hover { color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); }
+    .cat-tab-inactive .tab-count { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); }
+    .tab-count { font-size: 11px; padding: 2px 7px; border-radius: 100px; font-weight: 600; }
+
+    /* ── Cards ── */
+    .entity-card {
+      background: rgba(15,32,64,0.72); backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,102,204,0.15); border-radius: 16px; padding: 20px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; cursor: default;
+    }
+    .entity-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,102,204,0.18), 0 0 0 1px rgba(0,102,204,0.35); border-color: rgba(0,102,204,0.35); }
+
+    /* ── Rows ── */
+    .entity-row {
+      display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.1s; cursor: default;
+    }
+    .entity-row:last-child { border-bottom: none; }
+    .entity-row:hover { background: rgba(0,102,204,0.07); }
+
+    /* ── Must Meet rows ── */
+    .mm-card {
+      background: rgba(15,32,64,0.7); backdrop-filter: blur(10px);
+      border: 1px solid rgba(0,102,204,0.14); border-radius: 14px; padding: 18px;
+      display: flex; gap: 14px; align-items: flex-start;
+      transition: border-color 0.2s, box-shadow 0.2s; cursor: default;
+    }
+    .mm-card:hover { border-color: rgba(0,102,204,0.3); box-shadow: 0 8px 24px rgba(0,102,204,0.12); }
+
+    /* ── Fade in ── */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.45s ease both; }
+
+    /* ── View toggle ── */
+    .view-toggle { display: flex; align-items: center; background: rgba(255,255,255,0.07); border-radius: 10px; padding: 3px; gap: 2px; }
+    .view-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.12s; }
+    .view-btn-active { background: #0066cc; color: white; }
+    .view-btn-inactive { background: transparent; color: rgba(255,255,255,0.5); }
+    .view-btn-inactive:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.08); }
+
+    /* ── Search ── */
+    .search-wrap input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: white; border-radius: 10px; width: 100%; }
+    .search-wrap input::placeholder { color: rgba(255,255,255,0.32); }
+    .search-wrap input:focus { outline: none; border-color: rgba(0,102,204,0.55); box-shadow: 0 0 0 3px rgba(0,102,204,0.14); background: rgba(255,255,255,0.09); }
+
+    /* ── Footer ── */
+    .site-footer { margin-top: 36px; text-align: center; font-size: 12px; color: rgba(255,255,255,0.3); }
+    .site-footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+    .site-footer a:hover { color: rgba(255,255,255,0.85); }
+
     ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,102,204,0.4); border-radius: 2px; }
   </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo } = React;
 
 const CATEGORIES = [
   { id:'all',            label:'All',              desc:'Every organisation shaping the Valencia maritime innovation ecosystem.' },
@@ -36,6 +145,7 @@ const CATEGORIES = [
   { id:'investor',       label:'Investors',        desc:'Funds, public bodies, and institutions providing capital or investment support.' },
   { id:'accelerator',    label:'Accelerators',     desc:'Programmes and hubs accelerating maritime innovation and entrepreneurship.' },
   { id:'network',        label:'Networks',         desc:'Associations, platforms, and communities connecting the maritime ecosystem.' },
+  { id:'mustmeet',       label:'Must Meet',        desc:'15 priority contacts for building the 300 Maritime founder community — essential first calls for Valencia.' },
 ];
 
 const C = {
@@ -58,6 +168,56 @@ const C = {
 const bg = k => C[k][0];
 const fg = k => C[k][1];
 
+/* ── Must Meet contacts ── */
+const MUSTMEET = [
+  { id:'m1',  name:'Salvador Furió Pruñonosa', title:'Director', company:'Opentop / Valenciaport Foundation',
+    email:'sfurio@fundacion.valenciaport.com', phone:'', tag:'Ecosystem Builder',
+    why:'Gateway to the Valencia port ecosystem. Leads Opentop — the primary maritime accelerator — and manages access to the full Valenciaport innovation network and PEIC congress.' },
+  { id:'m2',  name:'Mar Chao López', title:'President', company:'Port Authority of Valencia',
+    email:'apv@valenciaport.com', phone:'+34 963 939 500', tag:'Port Authority',
+    why:'Top institutional contact at Valenciaport. Any major programme at the port requires her backing — controls port access, co-investment and institutional credibility.' },
+  { id:'m3',  name:'Antonio Torregrosa Maicas', title:'Director General', company:'Valenciaport Foundation',
+    email:'info@fundacion.valenciaport.com', phone:'+34 96 393 94 00', tag:'Ecosystem Builder',
+    why:'Manages €62M in active EU/national R&D projects and the Imarport grant pipeline. Co-funding and institutional R&D support runs through him.' },
+  { id:'m4',  name:'Nacho Mas', title:'CEO', company:'Startup Valencia',
+    email:'', phone:'', tag:'Community',
+    why:'Controls access to 3,000+ Valencia startups and 800+ investors via the Valencia Digital Summit. The bridge between maritime and the wider tech founder community.' },
+  { id:'m5',  name:'Marta Nogueras', title:'Director General', company:'Marina de Empresas / Lanzadera',
+    email:'', phone:'', tag:'Ecosystem Builder',
+    why:'Controls Lanzadera (1,600+ portfolio companies, Juan Roig-backed) and Marina de Empresas campus. Critical for programme credibility, deal flow and early-stage capital access.' },
+  { id:'m6',  name:'Inés Calabuig', title:'Managing Partner', company:'GoHub Ventures',
+    email:'', phone:'', tag:'Investor',
+    why:'€90M Valencia-based VC with maritime and logistics portfolio. Best local investor for programme startups; backed by Global Omnium (water/infrastructure group).' },
+  { id:'m7',  name:'Stephan Morais', title:'Managing Partner', company:'Indico Capital — Blue Fund',
+    email:'', phone:'', tag:'Investor',
+    why:'€50M Iberian blue economy fund, EIF-backed. Best VC pipeline for Spain/Portugal maritime founders — BlueInvest partner with active deal flow from Atlantic coast.' },
+  { id:'m8',  name:'Carsten Krome', title:'Managing Partner', company:'Hatch Blue',
+    email:'', phone:'', tag:'Investor',
+    why:'€93M European blue economy VC, Blue Revolution Fund (EIF/InvestEU). Dedicated maritime/ocean fund — direct pipeline for funding programme startups.' },
+  { id:'m9',  name:'Sjoerd de Jager', title:'CEO & Co-Founder', company:'PortXchange',
+    email:'', phone:'', tag:'Founder',
+    why:'$13M-funded, leads the most globally deployed port call optimisation platform, already piloted at Valencia. International founder with Shell/APM backing and global port network.' },
+  { id:'m10', name:'David Gómez-Ullate Oteiza', title:'Founder & CEO', company:'Canonical Green',
+    email:'', phone:'', tag:'Founder',
+    why:'Local maritime AI founder, Opentop graduate, Valencia City Council backed. Natural anchor member for the founder community — connects academia (IE University) to maritime.' },
+  { id:'m11', name:'Ignasi Ferrer Pellicer', title:'CEO & Co-Founder', company:'Ocean Ecostructure',
+    email:'', phone:'', tag:'Founder',
+    why:'€1.6M-funded blue biotech (Ship2B, Inclimo, Banco Sabadell). BlueInvest-backed, Repsol Foundation partnership — the strongest ESG/biodiversity narrative in the ecosystem.' },
+  { id:'m12', name:'Orlando Remédios', title:'CEO', company:'Sensefinity',
+    email:'', phone:'', tag:'Founder',
+    why:'$4.4M-funded IoT cargo tracking platform, Opentop finalist. Berlin-based but Valencia-connected — brings European IoT network and proven logistics funding track record.' },
+  { id:'m13', name:'Jorge Portillo', title:'CEO', company:'Greemko',
+    email:'jorge@greemko.com', phone:'+34 690 11 99 00', tag:'Founder',
+    why:'ESG/GHG maritime SaaS, Opentop finalist backed by BIND and Climate-KIC. Direct contact available — anchors the decarbonisation narrative in the programme.' },
+  { id:'m14', name:'Gabriel Ferrús Clari', title:'CEO', company:'SEAPort Solutions',
+    email:'', phone:'', tag:'Founder',
+    why:'Ports 4.0-funded port call data platform, partially owned by Valenciaport Foundation. Bridges institutional and startup worlds — ideal co-founder for programme credibility.' },
+  { id:'m15', name:'Peter Ludvigsen', title:'CEO', company:'Block Shipping',
+    email:'', phone:'+45 36 96 77 02', tag:'Founder',
+    why:'EUDP-funded blockchain container management, Opentop finalist. Copenhagen-based — adds Nordic maritime dimension and international ecosystem connections to the programme.' },
+];
+
+/* ── Entities ── */
 const ENTITIES = [
   // PORT AUTHORITIES
   { id:1,  name:'Port Authority of Valencia',  category:'port-authority',
@@ -230,12 +390,14 @@ const ENTITIES = [
     description:'SaaS platform for automatic evaluation of corporate environmental performance and greenhouse gas emissions. Opentop 1st Acceleration finalist serving maritime clients.',
     tags:['ESG SaaS','GHG Accounting','Compliance'], website:'https://greemko.com',
     logoInitials:'GRK', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2018', size:'Small',
-    contact:{ name:'Jorge Portillo', title:'CEO' } },
+    funding:'Pre-Seed',
+    contact:{ name:'Jorge Portillo', title:'CEO', email:'jorge@greemko.com', phone:'+34 690 11 99 00' } },
 
   { id:46, name:'Sensefinity',                 category:'startup',
     description:'IoT transformation company offering full-stack "Internet of Cargo" sensor solutions that standardise how maritime assets communicate throughout logistics processes. Opentop finalist.',
     tags:['IoT','Cargo Tracking','Sensors'], website:'https://sensefinity.com',
     logoInitials:'SFY', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2015', size:'Small',
+    funding:'$4.4M',
     contact:{ name:'Orlando Remédios', title:'CEO' } },
 
   { id:47, name:'Aventra Group',               category:'startup',
@@ -248,7 +410,8 @@ const ENTITIES = [
     description:'Blockchain-based platform creating a shared, transparent register for container management. Reduces cost and friction across 800M container movements per year. Opentop finalist.',
     tags:['Blockchain','Containers','Transparency'], website:'https://blockshipping.io',
     logoInitials:'BSP', logoBg:bg('violet1'), logoColor:fg('violet1'), founded:'2018', size:'Small',
-    contact:{ name:'Peter Ludvigsen', title:'CEO' } },
+    funding:'DKK 1.8M Grant',
+    contact:{ name:'Peter Ludvigsen', title:'CEO', phone:'+45 36 96 77 02' } },
 
   { id:50, name:'NextPort AI',                 category:'startup',
     description:'AI and digital-twin startup for port and terminal optimisation; named among the "50 Most Innovative Maritime Startups 2024" by Thetius. Funded by Ports 4.0.',
@@ -306,24 +469,28 @@ const ENTITIES = [
     description:'Climate risk and hyperlocal sea-and-weather forecasting platform used by ports, energy firms and coastal infrastructure operators worldwide. Presented at Opentop PEIC in Valencia.',
     tags:['Climate Risk','Forecasting','MetOcean'], website:'https://i4sea.com',
     logoInitials:'I4S', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2016', size:'Small',
+    funding:'Seed',
     contact:{ name:'Mateus de Oliveira Lima', title:'CEO' } },
 
   { id:63, name:'Magallanes Renovables',       category:'startup',
     description:'Spanish pioneer in floating tidal stream energy; developed the ATIR tidal platform generating 1.5 MW from tidal currents. BlueInvest and Horizon Europe backed.',
     tags:['Tidal Energy','Blue Renewables','BlueInvest'], website:'https://magallanesrenovables.com',
     logoInitials:'MGR', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'2008', size:'Small',
+    funding:'BlueInvest',
     contact:{ name:'Alejandro Marques de Magallanes', title:'CEO' } },
 
   { id:64, name:'Ocean Ecostructure',          category:'startup',
     description:'Blue biotech startup restoring marine biodiversity by integrating eco-structures into port and coastal infrastructure. BlueInvest-supported with €1.6M seed including Repsol Foundation.',
     tags:['Blue Biotech','Biodiversity','Port Infra'], website:'https://oceanecostructure.com',
     logoInitials:'OCE', logoBg:bg('green1'), logoColor:fg('green1'), founded:'2019', size:'Small',
+    funding:'€1.6M Seed',
     contact:{ name:'Ignasi Ferrer Pellicer', title:'CEO' } },
 
   { id:65, name:'PortXchange',                 category:'startup',
     description:'Port call optimisation platform piloted with the Port Authority of Valencia, enabling data-sharing between vessels, terminals and agents to cut port call emissions and time.',
     tags:['Port Call Optimisation','Data Sharing','Emissions'], website:'https://portxchange.com',
     logoInitials:'PXC', logoBg:bg('blue2'), logoColor:fg('blue2'), founded:'2018', size:'Small',
+    funding:'$13M',
     contact:{ name:'Sjoerd de Jager', title:'CEO' } },
 
   { id:66, name:'Metaenlace',                  category:'startup',
@@ -353,6 +520,7 @@ const ENTITIES = [
     description:'State Ports-managed open innovation fund — €53.75M across 6 calls, funding 108 ideas, 47 pre-commercial and 37 commercial projects in port-maritime innovation.',
     tags:['Innovation Fund','Port Tech','R&D Grants'], website:'https://ports40.es',
     logoInitials:'P40', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'2020', size:'Large',
+    aum:'€53.75M',
     contact:{ name:'José Llorca', title:'Director' } },
 
   { id:82, name:'CDTI',                        category:'investor',
@@ -389,30 +557,35 @@ const ENTITIES = [
     description:'EU platform and technical assistance facility under EMFAF; coached 300+ blue economy companies and facilitated €300M+ in private investment since 2019.',
     tags:['Blue Economy','EU Grants','EMFAF'], website:'https://blueinvest-community.converve.io',
     logoInitials:'BIV', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2019', size:'Large',
+    aum:'€300M+ facilitated',
     contact:{ name:'Paloma Aba Garrote', title:'Director, CINEA' } },
 
   { id:88, name:'European Investment Fund',    category:'investor',
     description:'EU body providing risk finance for SMEs; co-anchors blue economy VC funds under InvestEU with a dedicated €75M Blue Economy equity allocation for Southern European funds.',
     tags:['EU VC Co-invest','InvestEU','Blue Economy'], website:'https://www.eif.org',
     logoInitials:'EIF', logoBg:bg('violet1'), logoColor:fg('violet1'), founded:'1994', size:'Large',
+    aum:'€11B+ AUM',
     contact:{ name:'Marjut Falkstedt', title:'CEO' } },
 
   { id:89, name:'European Investment Bank',    category:'investor',
     description:'EU\'s long-term lending institution; invested €12.9B in sustainable blue economy operations 2021–2025 and co-anchors a €500M InvestEU blue economy equity vehicle.',
     tags:['Infrastructure Finance','Blue Economy','EU'], website:'https://www.eib.org',
     logoInitials:'EIB', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'1958', size:'Large',
+    aum:'€600B+ balance sheet',
     contact:{ name:'Nadia Calviño', title:'President' } },
 
   { id:90, name:'EMFAF',                       category:'investor',
     description:'European Maritime, Fisheries and Aquaculture Fund — 2021–2027 EU structural fund underpinning BlueInvest, the Sustainable Blue Economy Partnership and direct grants to maritime SMEs.',
     tags:['EU Structural Fund','Maritime Grants','Blue Economy'], website:'https://oceans-and-fisheries.ec.europa.eu',
     logoInitials:'EMF', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'2021', size:'Large',
+    aum:'€6.1B fund',
     contact:{ name:'Paloma Aba Garrote', title:'Director, CINEA' } },
 
   { id:91, name:'GoHub Ventures',              category:'investor',
     description:'€90M Valencia-based VC fund backed by Global Omnium, investing in high-tech B2B software startups globally with a strong local maritime and logistics ecosystem presence.',
     tags:['Venture Capital','B2B SaaS','Valencia'], website:'https://www.gohub.vc',
     logoInitials:'GHV', logoBg:bg('purple1'), logoColor:fg('purple1'), founded:'2019', size:'Medium',
+    aum:'€90M',
     contact:{ name:'Inés Calabuig', title:'Managing Partner' } },
 
   { id:92, name:'Lanzadera',                   category:'investor',
@@ -425,60 +598,70 @@ const ENTITIES = [
     description:'Telefónica\'s global corporate venture capital and co-lead mentor of Opentop\'s acceleration programme. Invests in IoT, AI and B2B tech across Spain and Latin America.',
     tags:['Corporate VC','IoT & AI','Opentop Partner'], website:'https://www.wayra.com',
     logoInitials:'WAY', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'2011', size:'Large',
+    aum:'€150K–€5M tickets',
     contact:{ name:'Paloma Castellano Sanz', title:'Managing Director, Wayra Spain' } },
 
   { id:94, name:'Plug and Play Spain',         category:'investor',
     description:'Global accelerator and VC with active Valencia presence; focuses on Supply Chain & Logistics and is a listed Startup Valencia ecosystem partner.',
     tags:['Global VC','Supply Chain','Accelerator'], website:'https://www.plugandplaytechcenter.com',
     logoInitials:'PNP', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2006', size:'Large',
+    aum:'€20M (Spain fund)',
     contact:{ name:'Borja Aznar Bonilla', title:'Managing Director, Spain' } },
 
   { id:95, name:'Indico Capital — Blue Fund',  category:'investor',
     description:'Portuguese early-stage VC with a dedicated €50M Blue Fund for ocean and blue economy startups in Portugal and Spain. BlueInvest partner and EIF-backed.',
     tags:['Blue Economy VC','Iberia','EIF-backed'], website:'https://www.indicocapital.com',
     logoInitials:'IDC', logoBg:bg('sky2'), logoColor:fg('sky2'), founded:'2016', size:'Medium',
+    aum:'€50M Blue Fund',
     contact:{ name:'Stephan Morais', title:'Managing Partner' } },
 
   { id:96, name:'Growth Blue I',               category:'investor',
     description:'First private equity blue economy fund in Southern Europe (€28M), backed by EIF under InvestEU, explicitly targeting SMEs from Spain and Portugal.',
     tags:['Private Equity','Blue Economy','Iberia'], website:'https://www.eif.org',
     logoInitials:'GBL', logoBg:bg('teal1'), logoColor:fg('teal1'), founded:'2023', size:'Medium',
+    aum:'€28M',
     contact:{ name:'Miguel Herédia', title:'Managing Partner' } },
 
   { id:97, name:'Seaya Ventures',              category:'investor',
     description:'Madrid-based leading Spanish VC investing in impact and growth-stage tech companies across Spain and Latin America — key route to Series A for Spanish maritime scaleups.',
     tags:['Impact VC','Growth Stage','Series A/B'], website:'https://www.seaya.vc',
     logoInitials:'SVY', logoBg:bg('purple2'), logoColor:fg('purple2'), founded:'2013', size:'Medium',
+    aum:'€650M+ AUM',
     contact:{ name:'Beatriz González', title:'Managing Partner' } },
 
   { id:98, name:'K Fund',                      category:'investor',
     description:'Spanish seed and Series A VC (€50M+) focused on startups with international ambitions, investing €100K–€2M tickets in tech including logistics and maritime SaaS.',
     tags:['Seed & Series A','Spain','Early Stage'], website:'https://www.kfund.vc',
     logoInitials:'KFD', logoBg:bg('amber4'), logoColor:fg('amber4'), founded:'2016', size:'Medium',
+    aum:'€50M',
     contact:{ name:'Iñaki Arrola', title:'Managing Partner' } },
 
   { id:99, name:'Inveready',                   category:'investor',
-    description:'Barcelona-based alternative investment firm (143 active companies, €600M+ AUM) across IT, life sciences, venture debt and PE — one of Spain\'s most active tech investors.',
+    description:'Barcelona-based alternative investment firm (143 active companies, €2.1B AUM) across IT, life sciences, venture debt and PE — one of Spain\'s most active tech investors.',
     tags:['Venture Debt','IT & LS','Spain'], website:'https://www.inveready.com',
     logoInitials:'IRY', logoBg:bg('rose1'), logoColor:fg('rose1'), founded:'2008', size:'Medium',
+    aum:'€2.1B AUM',
     contact:{ name:'Josep Maria Echarri Torres', title:'CEO' } },
 
   { id:100, name:'Nauta Capital',              category:'investor',
     description:'Barcelona/London VC investing in early-stage B2B SaaS across Europe — a key investor profile for port tech, maritime AI and logistics software startups.',
     tags:['B2B SaaS','Early Stage','Europe'], website:'https://www.nautacapital.com',
     logoInitials:'NCA', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'2004', size:'Medium',
+    aum:'€550M+ AUM',
     contact:{ name:'Jordi Viñas', title:'General Partner' } },
 
   { id:101, name:'Samaipata Ventures',         category:'investor',
-    description:'Pan-European VC ($160M+ AUM) specialising in digital platforms with network effects — relevant for maritime marketplace and logistics platform models.',
+    description:'Pan-European VC (€150M+ AUM) specialising in digital platforms with network effects — relevant for maritime marketplace and logistics platform models.',
     tags:['Platform VC','Network Effects','Europe'], website:'https://www.samaipata.vc',
     logoInitials:'SAM', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2016', size:'Medium',
+    aum:'€150M+ AUM',
     contact:{ name:'José del Barrio', title:'Managing Partner' } },
 
   { id:102, name:'BStartup (Banco Sabadell)',  category:'investor',
     description:'Banco Sabadell\'s startup investment programme backing early-stage tech companies in Spain; a key maritime ecosystem funder listed on Startup Valencia.',
     tags:['Bank VC','Early Stage','Spain'], website:'https://www.bstartup.com',
     logoInitials:'BSB', logoBg:bg('teal2'), logoColor:fg('teal2'), founded:'2013', size:'Large',
+    aum:'€200K per co.',
     contact:{ name:'Yolanda Pérez Sáez', title:'Director' } },
 
   { id:103, name:'DayOne (CaixaBank)',         category:'investor',
@@ -494,27 +677,31 @@ const ENTITIES = [
     contact:{ name:'Javier Faus Santasusana', title:'CEO' } },
 
   { id:105, name:'Hatch Blue',                 category:'investor',
-    description:'European blue economy VC with a €20M Blue Revolution Fund (EIF/InvestEU 2024) targeting early-stage aquaculture and ocean food startups across Europe.',
+    description:'European blue economy VC with a €93M Blue Revolution Fund (EIF/InvestEU 2024) targeting early-stage aquaculture and ocean food startups across Europe.',
     tags:['Aquaculture VC','Blue Food','EIF-backed'], website:'https://www.hatchblue.com',
     logoInitials:'HTC', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'2018', size:'Small',
+    aum:'€93M',
     contact:{ name:'Carsten Krome', title:'Managing Partner' } },
 
   { id:106, name:'Astanor Ventures',           category:'investor',
     description:'European impact VC backing sustainable food and agri-ocean companies; one of the two funds receiving EIF\'s dedicated BlueInvest equity allocation for blue economy.',
     tags:['Impact VC','Blue Food','EIF BlueInvest'], website:'https://www.astanor.com',
     logoInitials:'AST', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2017', size:'Medium',
+    aum:'€800M AUM',
     contact:{ name:'Eric Archambeau', title:'Managing Partner' } },
 
   { id:107, name:'Azora Capital',              category:'investor',
-    description:'Spanish real-asset investment firm (€100M+ logistics portfolio) managing warehousing and logistics assets on Valencia\'s A2 corridor, adjacent to port logistics flows.',
+    description:'Spanish real-asset investment firm (€14.6B AUM) managing warehousing and logistics assets on Valencia\'s A2 corridor, adjacent to port logistics flows.',
     tags:['Logistics Real Estate','Valencia A2','Infrastructure'], website:'https://www.azora.com',
     logoInitials:'AZR', logoBg:bg('amber2'), logoColor:fg('amber2'), founded:'2003', size:'Large',
+    aum:'€14.6B AUM',
     contact:{ name:'Javier Rodríguez-Heredia', title:'Managing Partner' } },
 
   { id:108, name:'Sustainable Blue Economy Partnership', category:'investor',
     description:'EU Horizon Europe co-funded R&I partnership with €325M+ in maritime investment; launched first 19-project cohort in Spain in 2024. Fundación Valenciaport holds active projects.',
     tags:['Horizon Europe','R&I','Maritime R&D'], website:'https://bluepartnership.eu',
     logoInitials:'SBP', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'2022', size:'Large',
+    aum:'€325M+',
     contact:{ name:'Angiolo Boncompagni', title:'Partnership Coordinator', email:'info@bluepartnership.eu' } },
 
   // ACCELERATORS
@@ -577,124 +764,294 @@ const ENTITIES = [
 function getCat(id) { return CATEGORIES.find(c => c.id === id); }
 function countFor(catId) {
   if (catId === 'all') return ENTITIES.length;
+  if (catId === 'mustmeet') return MUSTMEET.length;
   return ENTITIES.filter(e => e.category === catId).length;
 }
 
-const IconList   = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
-const IconGrid   = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
+/* ── Icons ── */
+const IconList   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+const IconGrid   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
 const IconSearch = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
 const IconX      = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 const IconLink   = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>;
-const IconPerson = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 const IconMail   = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
 const IconPhone  = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+const IconPerson = () => <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 
-function ContactBlock({ contact, color }) {
-  if (!contact) return null;
+/* ── Hero wave ── */
+function HeroWave() {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 pt-1.5 border-t border-gray-100">
-      <span className="flex items-center gap-1 text-xs text-gray-500">
-        <span style={{ color }}><IconPerson /></span>
-        <span className="font-medium text-gray-700">{contact.name}</span>
-        {contact.title && <span className="text-gray-400">· {contact.title}</span>}
+    <div className="wave-wrap">
+      <svg className="wave-svg" viewBox="0 0 2880 62" preserveAspectRatio="none">
+        <path d="M0,20 C240,50 480,0 720,25 C960,50 1200,5 1440,28 C1680,50 1920,2 2160,26 C2400,50 2640,4 2880,22 L2880,62 L0,62 Z" fill="#0a1628" opacity="0.6"/>
+        <path d="M0,38 C240,10 480,55 720,35 C960,15 1200,48 1440,32 C1680,16 1920,50 2160,34 C2400,18 2640,52 2880,36 L2880,62 L0,62 Z" fill="#0a1628"/>
+      </svg>
+    </div>
+  );
+}
+
+/* ── Company logo with Clearbit + initials fallback ── */
+function EntityLogo({ entity, size='md' }) {
+  const [state, setState] = React.useState('loading');
+  const dim = size === 'lg' ? 56 : 40;
+  const domain = React.useMemo(() => {
+    if (!entity.website || entity.website === '#') return null;
+    try { return new URL(entity.website).hostname.replace(/^www\./, ''); }
+    catch { return null; }
+  }, [entity.website]);
+
+  const showImg = domain && state === 'loaded';
+
+  return (
+    <div style={{ width:dim, height:dim, borderRadius:12, flexShrink:0, overflow:'hidden',
+                  background: showImg ? 'white' : entity.logoBg,
+                  color: entity.logoColor, display:'flex', alignItems:'center', justifyContent:'center',
+                  fontWeight:700, fontSize: size==='lg' ? 13 : 11, userSelect:'none',
+                  border: showImg ? '1px solid rgba(255,255,255,0.12)' : 'none' }}>
+      {domain && (
+        <img src={`https://logo.clearbit.com/${domain}`} alt=""
+             style={{ width: dim-10, height: dim-10, objectFit:'contain', display: showImg ? 'block' : 'none' }}
+             onLoad={() => setState('loaded')} onError={() => setState('error')} />
+      )}
+      {!showImg && entity.logoInitials}
+    </div>
+  );
+}
+
+/* ── Category pill ── */
+function CatPill({ entity }) {
+  const cat = getCat(entity.category);
+  return (
+    <span style={{ fontSize:11, padding:'3px 10px', borderRadius:100, fontWeight:600,
+                   background: entity.logoColor+'20', color: entity.logoBg,
+                   border:`1px solid ${entity.logoColor}40` }}>
+      {cat.label}
+    </span>
+  );
+}
+
+/* ── AUM / Funding badge ── */
+function MetaBadge({ value }) {
+  if (!value) return null;
+  return (
+    <span style={{ fontSize:10, padding:'2px 8px', borderRadius:100, fontWeight:600,
+                   background:'rgba(240,165,0,0.12)', color:'#f0a500',
+                   border:'1px solid rgba(240,165,0,0.28)' }}>
+      {value}
+    </span>
+  );
+}
+
+/* ── Visit link ── */
+function VisitLink({ entity }) {
+  if (!entity.website || entity.website === '#') return null;
+  return (
+    <a href={entity.website} target="_blank" rel="noopener noreferrer"
+       style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600,
+                color: entity.logoBg, textDecoration:'none', flexShrink:0, transition:'opacity .12s' }}
+       onMouseOver={e=>e.currentTarget.style.opacity='.65'}
+       onMouseOut={e=>e.currentTarget.style.opacity='1'}>
+      Visit <IconLink />
+    </a>
+  );
+}
+
+/* ── Tags ── */
+function Tags({ tags }) {
+  return (
+    <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
+      {tags.map(t => (
+        <span key={t} style={{ fontSize:10, padding:'3px 8px', borderRadius:5,
+                                background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.4)',
+                                border:'1px solid rgba(255,255,255,0.08)' }}>{t}</span>
+      ))}
+    </div>
+  );
+}
+
+/* ── Contact block ── */
+function ContactBlock({ contact, accentColor }) {
+  if (!contact) return null;
+  const cc = accentColor || '#0066cc';
+  return (
+    <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:'5px 12px',
+                  marginTop:8, paddingTop:8, borderTop:'1px solid rgba(255,255,255,0.07)' }}>
+      <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11 }}>
+        <span style={{ color:cc }}><IconPerson /></span>
+        <span style={{ fontWeight:600, color:'rgba(255,255,255,0.88)' }}>{contact.name}</span>
+        {contact.title && <span style={{ color:'rgba(255,255,255,0.38)' }}>· {contact.title}</span>}
       </span>
       {contact.email && (
-        <a href={`mailto:${contact.email}`} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors">
-          <span style={{ color }}><IconMail /></span>{contact.email}
+        <a href={`mailto:${contact.email}`}
+           style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, color:'rgba(255,255,255,0.36)', textDecoration:'none', transition:'color .12s' }}
+           onMouseOver={e=>e.currentTarget.style.color='rgba(255,255,255,0.75)'}
+           onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.36)'}>
+          <span style={{ color:cc }}><IconMail /></span>{contact.email}
         </a>
       )}
       {contact.phone && (
-        <span className="flex items-center gap-1 text-xs text-gray-400">
-          <span style={{ color }}><IconPhone /></span>{contact.phone}
+        <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, color:'rgba(255,255,255,0.36)' }}>
+          <span style={{ color:cc }}><IconPhone /></span>{contact.phone}
         </span>
       )}
     </div>
   );
 }
 
-function EntityLogo({ entity, size = 'md' }) {
-  const cls = size === 'lg' ? 'w-14 h-14 text-sm' : 'w-10 h-10 text-xs';
+/* ── List row ── */
+function EntityRow({ entity, index }) {
   return (
-    <div className={`${cls} rounded-xl flex items-center justify-center font-bold flex-shrink-0 select-none`}
-         style={{ background: entity.logoBg, color: entity.logoColor }}>
-      {entity.logoInitials}
-    </div>
-  );
-}
-
-function EntityRow({ entity }) {
-  const cat = getCat(entity.category);
-  return (
-    <div className="entity-row flex items-start gap-4 px-5 py-4 border-b border-gray-100 last:border-b-0">
-      <div className="pt-0.5"><EntityLogo entity={entity} /></div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-0.5">
-          <span className="font-semibold text-gray-900 text-sm">{entity.name}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: entity.logoBg, color: entity.logoColor }}>{cat.label}</span>
-          {entity.founded && <span className="text-xs text-gray-400">Est. {entity.founded}</span>}
+    <div className="entity-row fade-in" style={{ animationDelay: Math.min(index*0.04,0.5)+'s' }}>
+      <div style={{ paddingTop:2 }}><EntityLogo entity={entity} /></div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:3 }}>
+          <span style={{ fontWeight:700, fontSize:14, color:'rgba(255,255,255,0.92)' }}>{entity.name}</span>
+          <CatPill entity={entity} />
+          {entity.founded && <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>Est. {entity.founded}</span>}
+          <MetaBadge value={entity.aum || entity.funding} />
         </div>
-        <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{entity.description}</p>
-        <div className="flex flex-wrap gap-1 mt-1.5">
-          {entity.tags.map(t => <span key={t} className="text-xs bg-gray-50 text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded">{t}</span>)}
-        </div>
-        <ContactBlock contact={entity.contact} color={entity.logoColor} />
+        <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', lineHeight:1.6, margin:'0 0 8px',
+                    overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' }}>
+          {entity.description}
+        </p>
+        <Tags tags={entity.tags} />
+        <ContactBlock contact={entity.contact} accentColor={entity.logoColor} />
       </div>
-      {entity.website && entity.website !== '#' && (
-        <a href={entity.website} target="_blank" rel="noopener noreferrer"
-           className="flex-shrink-0 flex items-center gap-1 text-xs font-medium hover:underline mt-0.5" style={{ color: entity.logoColor }}>
-          Visit <IconLink />
-        </a>
-      )}
+      <VisitLink entity={entity} />
     </div>
   );
 }
 
-function EntityCard({ entity }) {
-  const cat = getCat(entity.category);
+/* ── Gallery card ── */
+function EntityCard({ entity, index }) {
   return (
-    <div className="entity-card bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
+    <div className="entity-card fade-in" style={{ animationDelay: Math.min(index*0.04,0.5)+'s' }}>
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8 }}>
         <EntityLogo entity={entity} size="lg" />
-        {entity.website && entity.website !== '#' && (
-          <a href={entity.website} target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-1 text-xs font-medium hover:underline mt-1" style={{ color: entity.logoColor }}>
-            Visit <IconLink />
-          </a>
-        )}
+        <VisitLink entity={entity} />
       </div>
       <div>
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug">{entity.name}</h3>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="inline-block text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: entity.logoBg, color: entity.logoColor }}>{cat.label}</span>
-          {entity.founded && <span className="text-xs text-gray-400">Est. {entity.founded}</span>}
+        <h3 style={{ fontWeight:700, fontSize:14, color:'rgba(255,255,255,0.92)', margin:'0 0 6px', lineHeight:1.3 }}>{entity.name}</h3>
+        <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+          <CatPill entity={entity} />
+          {entity.founded && <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>Est. {entity.founded}</span>}
+          <MetaBadge value={entity.aum || entity.funding} />
         </div>
       </div>
-      <p className="text-gray-500 text-xs leading-relaxed flex-1">{entity.description}</p>
-      <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-50">
-        {entity.tags.map(t => <span key={t} className="text-xs bg-gray-50 text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded">{t}</span>)}
-      </div>
-      {entity.contact && <ContactBlock contact={entity.contact} color={entity.logoColor} />}
+      <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', lineHeight:1.65, flex:1, margin:0 }}>{entity.description}</p>
+      <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:10 }}><Tags tags={entity.tags} /></div>
+      {entity.contact && <ContactBlock contact={entity.contact} accentColor={entity.logoColor} />}
     </div>
   );
 }
 
+/* ── Must Meet tag colors ── */
+const MM_TAG = {
+  'Founder':          ['rgba(240,165,0,0.14)',  '#f0a500'],
+  'Investor':         ['rgba(96,165,250,0.14)', '#60a5fa'],
+  'Ecosystem Builder':['rgba(52,211,153,0.14)', '#34d399'],
+  'Port Authority':   ['rgba(129,140,248,0.14)','#818cf8'],
+  'Community':        ['rgba(251,113,133,0.14)','#fb7185'],
+};
+
+/* ── Must Meet card ── */
+function MustMeetCard({ person, index }) {
+  const [bg, col] = MM_TAG[person.tag] || MM_TAG['Founder'];
+  const initials = person.name.split(' ').filter(Boolean).map(n=>n[0]).slice(0,2).join('');
+  return (
+    <div className="mm-card fade-in" style={{ animationDelay: Math.min(index*0.05,0.6)+'s' }}>
+      {/* Avatar */}
+      <div style={{ width:46, height:46, borderRadius:12, background:bg, color:col, flexShrink:0,
+                    display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:14 }}>
+        {initials}
+      </div>
+      {/* Content */}
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:3 }}>
+          <span style={{ fontWeight:700, fontSize:14, color:'rgba(255,255,255,0.92)' }}>{person.name}</span>
+          <span style={{ fontSize:10, padding:'2px 9px', borderRadius:100, fontWeight:600, background:bg, color:col, border:`1px solid ${col}40` }}>{person.tag}</span>
+        </div>
+        <div style={{ fontSize:12, color:'rgba(255,255,255,0.48)', marginBottom:8 }}>
+          {person.title} <span style={{ color:'rgba(255,255,255,0.25)' }}>·</span> {person.company}
+        </div>
+        {/* Contact row */}
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'4px 14px', marginBottom:8 }}>
+          {person.email && (
+            <a href={`mailto:${person.email}`}
+               style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'rgba(255,255,255,0.4)', textDecoration:'none', transition:'color .12s' }}
+               onMouseOver={e=>e.currentTarget.style.color=col} onMouseOut={e=>e.currentTarget.style.color='rgba(255,255,255,0.4)'}>
+              <span style={{ color:col }}><IconMail /></span>{person.email}
+            </a>
+          )}
+          {person.phone && (
+            <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:'rgba(255,255,255,0.4)' }}>
+              <span style={{ color:col }}><IconPhone /></span>{person.phone}
+            </span>
+          )}
+          {!person.email && !person.phone && (
+            <span style={{ fontSize:11, color:'rgba(255,255,255,0.2)', fontStyle:'italic' }}>Contact via LinkedIn</span>
+          )}
+        </div>
+        {/* Why */}
+        <p style={{ fontSize:11, color:'rgba(255,255,255,0.35)', margin:0, lineHeight:1.6,
+                    paddingTop:8, borderTop:'1px solid rgba(255,255,255,0.06)', fontStyle:'italic' }}>
+          {person.why}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── Must Meet list ── */
+function MustMeetList({ search }) {
+  const q = search.toLowerCase().trim();
+  const filtered = MUSTMEET.filter(p =>
+    !q || p.name.toLowerCase().includes(q) || p.company.toLowerCase().includes(q) ||
+    p.title.toLowerCase().includes(q) || p.tag.toLowerCase().includes(q)
+  );
+  return (
+    <div style={{ padding:20 }}>
+      {/* Header strip */}
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:18, padding:'12px 16px',
+                    background:'rgba(240,165,0,0.07)', border:'1px solid rgba(240,165,0,0.2)', borderRadius:12 }}>
+        <span style={{ fontSize:18 }}>⚓</span>
+        <div>
+          <div style={{ fontSize:13, fontWeight:700, color:'#f0a500' }}>300 Maritime — First Outreach List</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.45)' }}>
+            {filtered.length} contacts curated for building the Valencia founder-led maritime community
+          </div>
+        </div>
+      </div>
+      <div style={{ display:'grid', gap:12, gridTemplateColumns:'repeat(auto-fill, minmax(420px, 1fr))' }}>
+        {filtered.length === 0
+          ? <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'60px 20px', color:'rgba(255,255,255,0.3)', fontSize:14 }}>No contacts match "{search}"</div>
+          : filtered.map((p, i) => <MustMeetCard key={p.id} person={p} index={i} />)
+        }
+      </div>
+    </div>
+  );
+}
+
+/* ── Empty state ── */
 function EmptyState({ search }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
-      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-300"><IconSearch /></div>
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'80px 20px', textAlign:'center' }}>
+      <div style={{ width:48, height:48, borderRadius:'50%', background:'rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12, color:'rgba(255,255,255,0.25)' }}><IconSearch /></div>
       {search
-        ? <><p className="text-sm font-medium text-gray-600">No results for "{search}"</p><p className="text-xs text-gray-400 mt-1">Try a different term or clear the category filter.</p></>
-        : <p className="text-sm text-gray-500">No organisations found.</p>}
+        ? <><p style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.6)', margin:'0 0 4px' }}>No results for "{search}"</p><p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', margin:0 }}>Try a different term or clear the category filter.</p></>
+        : <p style={{ fontSize:14, color:'rgba(255,255,255,0.4)', margin:0 }}>No organisations found.</p>}
     </div>
   );
 }
 
+/* ── App ── */
 function App() {
-  const [view,           setView]           = useState('list');
-  const [search,         setSearch]         = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [view,           setView]           = React.useState('list');
+  const [search,         setSearch]         = React.useState('');
+  const [activeCategory, setActiveCategory] = React.useState('all');
 
-  const filtered = useMemo(() => {
+  const filtered = React.useMemo(() => {
+    if (activeCategory === 'mustmeet') return [];
     const q = search.toLowerCase().trim();
     return ENTITIES.filter(e => {
       const matchCat    = activeCategory === 'all' || e.category === activeCategory;
@@ -703,96 +1060,121 @@ function App() {
     });
   }, [search, activeCategory]);
 
+  const isMustMeet = activeCategory === 'mustmeet';
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-20 bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center gap-4">
+    <div style={{ minHeight:'100vh', background:'#0a1628' }}>
+
+      {/* ── Sticky nav ── */}
+      <header className="site-header">
+        <div style={{ maxWidth:1060, margin:'0 auto', padding:'0 20px', height:56, display:'flex', alignItems:'center', gap:12 }}>
           <a href="https://maritime-venture.com" target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-2.5 mr-1 flex-shrink-0">
-            <div className="w-7 h-7 rounded-md bg-gray-900 flex items-center justify-center flex-shrink-0">
+             style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none', flexShrink:0 }}>
+            <div style={{ width:30, height:30, borderRadius:8, background:'linear-gradient(135deg,#0066cc,#0044aa)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 2px 8px rgba(0,102,204,0.5)' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/>
-                <path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+                <path d="M2 20h20M12 4l-7 8h14L12 4zM5 12v5M19 12v5M9 12v5M15 12v5"/>
               </svg>
             </div>
             <div className="hidden sm:block">
-              <div className="text-xs font-bold text-gray-900 leading-tight">300 Maritime Valencia</div>
-              <div className="text-xs text-gray-400 leading-tight">Ecosystem Directory</div>
+              <div style={{ fontSize:12, fontWeight:800, color:'#fff', lineHeight:1.2 }}>300 Maritime Valencia</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.4)', lineHeight:1.2 }}>Ecosystem Directory</div>
             </div>
           </a>
 
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
-            {[['list','List',<IconList/>],['gallery','Gallery',<IconGrid/>]].map(([v,l,icon])=>(
-              <button key={v} onClick={()=>setView(v)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${view===v?'bg-white text-gray-900 shadow-sm':'text-gray-500 hover:text-gray-700'}`}>
+          <div className="view-toggle">
+            {[['list','List',<IconList/>],['gallery','Gallery',<IconGrid/>]].map(([v,l,icon]) => (
+              <button key={v} onClick={() => setView(v)} className={`view-btn ${view===v?'view-btn-active':'view-btn-inactive'}`}>
                 {icon} {l}
               </button>
             ))}
           </div>
 
-          <div className="relative flex-1 max-w-sm">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"><IconSearch /></div>
-            <input type="text" placeholder="Search organisations..." value={search} onChange={e=>setSearch(e.target.value)}
-              className="w-full pl-9 pr-7 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 bg-gray-50 transition-all"/>
-            {search && <button onClick={()=>setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><IconX /></button>}
+          <div className="search-wrap" style={{ position:'relative', flex:1, maxWidth:340 }}>
+            <div style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', color:'rgba(255,255,255,0.3)', pointerEvents:'none' }}><IconSearch /></div>
+            <input type="text" placeholder="Search organisations…" value={search} onChange={e=>setSearch(e.target.value)}
+              style={{ paddingLeft:34, paddingRight:search?30:12, paddingTop:8, paddingBottom:8, fontSize:13, border:'none', width:'100%' }} />
+            {search && <button onClick={()=>setSearch('')} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.4)', padding:0, lineHeight:0 }}><IconX /></button>}
           </div>
 
-          <div className="ml-auto hidden sm:flex items-center gap-1.5 text-xs text-gray-400 flex-shrink-0">
-            <span className="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, fontSize:11, color:'rgba(255,255,255,0.35)', flexShrink:0 }} className="hidden sm:flex">
+            <span style={{ width:7, height:7, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 6px #22c55e', display:'inline-block' }}></span>
             Valencia, Spain
           </div>
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-5 pt-5 pb-16">
-        <p className="text-xs text-gray-400 mb-4">
-          Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of {ENTITIES.length} organisations
-        </p>
+      {/* ── Hero ── */}
+      <div className="hero">
+        <div className="hero-overlay" />
+        <div className="hero-content">
+          <div className="hero-eyebrow">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M2 20h20M12 4l-7 8h14L12 4zM5 12v5M19 12v5M9 12v5M15 12v5"/>
+            </svg>
+            300 Maritime Valencia
+          </div>
+          <h1 className="hero-title">Ecosystem Directory</h1>
+          <p className="hero-subtitle">{ENTITIES.length} organisations · Ports · Startups · Investors · Networks</p>
+        </div>
+        <HeroWave />
+      </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="border-b border-gray-100">
-            <div className="flex overflow-x-auto">
-              {CATEGORIES.map(cat => {
-                const isActive = activeCategory === cat.id;
-                return (
-                  <button key={cat.id} onClick={()=>setActiveCategory(cat.id)}
-                    className={`cat-tab flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 -mb-px ${isActive?'border-gray-900 text-gray-900':'border-transparent text-gray-400 hover:text-gray-600'}`}>
-                    {cat.label}
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${isActive?'bg-gray-900 text-white':'bg-gray-100 text-gray-500'}`}>{countFor(cat.id)}</span>
-                  </button>
-                );
-              })}
-            </div>
+      {/* ── Main ── */}
+      <div style={{ maxWidth:1060, margin:'0 auto', padding:'28px 20px 60px' }}>
+        {!isMustMeet && (
+          <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', marginBottom:16 }}>
+            Showing <span style={{ fontWeight:700, color:'rgba(255,255,255,0.65)' }}>{filtered.length}</span> of {ENTITIES.length} organisations
+          </p>
+        )}
+
+        <div className="main-panel">
+          {/* Tabs */}
+          <div className="tab-bar">
+            {CATEGORIES.map(cat => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+                  className={`cat-tab ${isActive ? 'cat-tab-active' : 'cat-tab-inactive'}`}>
+                  {cat.label}
+                  <span className="tab-count">{countFor(cat.id)}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="px-5 py-2.5 text-xs text-gray-400 bg-gray-50 border-b border-gray-100">
+          {/* Category desc */}
+          <div style={{ padding:'10px 20px', fontSize:12, color:'rgba(255,255,255,0.38)', background:'rgba(0,0,0,0.18)', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
             {getCat(activeCategory)?.desc}
           </div>
 
-          {view==='list' && (
+          {/* Must Meet */}
+          {isMustMeet && <MustMeetList search={search} />}
+
+          {/* List view */}
+          {!isMustMeet && view === 'list' && (
             <div>
-              {filtered.length===0 ? <EmptyState search={search}/> : filtered.map(e=><EntityRow key={e.id} entity={e}/>)}
+              {filtered.length === 0 ? <EmptyState search={search} /> : filtered.map((e,i) => <EntityRow key={e.id} entity={e} index={i} />)}
             </div>
           )}
 
-          {view==='gallery' && (
-            <div className="p-5">
-              {filtered.length===0
-                ? <EmptyState search={search}/>
-                : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filtered.map(e=><EntityCard key={e.id} entity={e}/>)}
+          {/* Gallery view */}
+          {!isMustMeet && view === 'gallery' && (
+            <div style={{ padding:20 }}>
+              {filtered.length === 0
+                ? <EmptyState search={search} />
+                : <div style={{ display:'grid', gap:16, gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))' }}>
+                    {filtered.map((e,i) => <EntityCard key={e.id} entity={e} index={i} />)}
                   </div>
               }
             </div>
           )}
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-400">
-            <a href="https://maritime-venture.com" target="_blank" rel="noopener noreferrer"
-               className="font-medium text-gray-600 hover:text-gray-900">maritime-venture.com</a>
-            {' '}· Valencia Maritime Innovation Ecosystem ·{' '}
-            <a href="mailto:ecosistema@valenciaport.com" className="hover:text-gray-600">Submit an organisation ↗</a>
+        <div className="site-footer">
+          <p>
+            <a href="https://maritime-venture.com" target="_blank" rel="noopener noreferrer">maritime-venture.com</a>
+            {' '}·{' '}Valencia Maritime Innovation Ecosystem{' '}·{' '}
+            <a href="mailto:ecosistema@valenciaport.com">Submit an organisation ↗</a>
           </p>
         </div>
       </div>
@@ -800,8 +1182,7 @@ function App() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
