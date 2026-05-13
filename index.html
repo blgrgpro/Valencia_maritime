@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valencia Maritime Ecosystem — 300 Maritime</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { background: #fafafa; margin: 0; }
+    .entity-row { transition: background .08s; cursor: default; }
+    .entity-row:hover { background: #f5f5f5; }
+    .entity-card { transition: box-shadow .15s, transform .15s; cursor: default; }
+    .entity-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+    .cat-tab { transition: color .1s, border-color .1s; cursor: pointer; white-space: nowrap; }
+    input[type="text"]:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,.06); border-color: #111; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+const CATEGORIES = [
+  { id:'all',            label:'All',              desc:'Every organisation shaping the Valencia maritime innovation ecosystem.' },
+  { id:'port-authority', label:'Port Authorities', desc:'Public bodies governing and operating the ports of the Valencia region.' },
+  { id:'corporate',      label:'Corporates',       desc:'Established maritime companies operating at or connected to Valenciaport.' },
+  { id:'startup',        label:'Startups',         desc:'Early and growth-stage ventures building maritime and blue economy solutions.' },
+  { id:'investor',       label:'Investors',        desc:'Funds, public bodies, and institutions providing capital or investment support.' },
+  { id:'accelerator',    label:'Accelerators',     desc:'Programmes and hubs accelerating maritime innovation and entrepreneurship.' },
+  { id:'network',        label:'Networks',         desc:'Associations, platforms, and communities connecting the maritime ecosystem.' },
+];
+
+const C = {
+  blue1:  ['#dbeafe','#1d4ed8'], blue2:  ['#e0f2fe','#0369a1'], blue3:  ['#eff6ff','#1e40af'],
+  indigo1:['#e0e7ff','#3730a3'], indigo2:['#ede9fe','#4338ca'],
+  purple1:['#f3e8ff','#7e22ce'], purple2:['#ede9fe','#6d28d9'],
+  violet1:['#f5f3ff','#5b21b6'],
+  slate1: ['#f1f5f9','#334155'],
+  green1: ['#dcfce7','#166534'], green2: ['#d1fae5','#065f46'],
+  green3: ['#ecfdf5','#047857'], teal1:  ['#ccfbf1','#0f766e'],
+  teal2:  ['#f0fdfa','#134e4a'], cyan1:  ['#cffafe','#155e75'],
+  sky1:   ['#e0f2fe','#0c4a6e'], sky2:   ['#f0f9ff','#0284c7'],
+  amber1: ['#fef3c7','#92400e'], amber2: ['#fff7ed','#c2410c'],
+  amber3: ['#fef9c3','#a16207'], amber4: ['#ffedd5','#9a3412'],
+  amber5: ['#fefce8','#854d0e'],
+  rose1:  ['#fce7f3','#9d174d'], rose2:  ['#fff1f2','#be123c'],
+  pink1:  ['#fdf2f8','#9d174d'], pink2:  ['#fce7f3','#be185d'],
+  red1:   ['#fee2e2','#b91c1c'], orange1:['#ffedd5','#c2410c'],
+};
+const bg = k => C[k][0];
+const fg = k => C[k][1];
+
+const ENTITIES = [
+  // PORT AUTHORITIES
+  { id:1,  name:'Port Authority of Valencia',  category:'port-authority',
+    description:'Public body managing three Mediterranean ports — Valencia, Sagunto and Gandía — hosting 100+ regular shipping lines to 1,000+ global destinations.',
+    tags:['Smart Port','Mediterranean','Infrastructure'], website:'https://www.valenciaport.com',
+    logoInitials:'PAV', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'1870', size:'Large' },
+
+  { id:2,  name:'Valenciaport Foundation',     category:'port-authority',
+    description:'Knowledge centre of the Mediterranean port cluster, coordinating 49 EU/national R&D projects in 2024 and mobilising €62M for blue economy and digital transformation.',
+    tags:['Blue Economy','R&D','Sustainability'], website:'https://www.fundacion.valenciaport.com',
+    logoInitials:'VF', logoBg:bg('blue2'), logoColor:fg('blue2'), founded:'2001', size:'Medium' },
+
+  // CORPORATES
+  { id:10, name:'Boluda Corporación Marítima', category:'corporate',
+    description:'Spain\'s largest private maritime group providing towage, shipping and port services across six continents with a fleet of 200+ vessels, headquartered in Valencia.',
+    tags:['Towage','Shipping','Global Fleet'], website:'https://www.boluda.com',
+    logoInitials:'BCM', logoBg:bg('purple2'), logoColor:fg('purple2'), founded:'1837', size:'Large' },
+
+  { id:11, name:'Baleària',                    category:'corporate',
+    description:'Valencian maritime group operating passenger and ro-pax services to the Balearic Islands, North Africa and the Caribbean with an LNG-powered fleet.',
+    tags:['Ferries','Ro-Pax','LNG'], website:'https://www.balearia.com',
+    logoInitials:'BAL', logoBg:bg('amber1'), logoColor:fg('amber1'), founded:'1998', size:'Large' },
+
+  { id:12, name:'APM Terminals Valencia',      category:'corporate',
+    description:'Maersk-group container terminal concession holder at Port of Valencia, handling millions of TEUs annually with semi-automated operations.',
+    tags:['Terminal Ops','Containers','Automation'], website:'https://www.apmterminals.com/en/valencia',
+    logoInitials:'APM', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2005', size:'Large' },
+
+  { id:13, name:'CSP Spain (COSCO)',           category:'corporate',
+    description:'COSCO Shipping Ports-majority-owned operator of the largest container terminal at Port of Valencia, formerly Noatum Container Terminal — a Belt and Road strategic hub.',
+    tags:['Terminal Ops','Containers','COSCO'], website:'https://cspspain.com',
+    logoInitials:'CSP', logoBg:bg('red1'), logoColor:fg('red1'), founded:'2017', size:'Large' },
+
+  { id:14, name:'CMA CGM Ibérica',             category:'corporate',
+    description:'Spanish subsidiary of CMA CGM Group operating 8 offices and 23 direct services across 18 Spanish ports of call, with regular container services through Valencia.',
+    tags:['Container Shipping','Iberia','Supply Chain'], website:'https://www.cma-cgm.com',
+    logoInitials:'CMA', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'1978', size:'Large' },
+
+  { id:15, name:'Hapag-Lloyd Spain',           category:'corporate',
+    description:'Spanish office of the world\'s 5th-largest container line with a dedicated Valencia customer service team and regular deep-sea services calling at Valenciaport.',
+    tags:['Container Shipping','Deep Sea','Logistics'], website:'https://www.hapag-lloyd.com',
+    logoInitials:'HPL', logoBg:bg('orange1'), logoColor:fg('orange1'), founded:'1970', size:'Large' },
+
+  { id:16, name:'Evergreen Shipping Spain',    category:'corporate',
+    description:'Spanish subsidiary of Taiwan\'s Evergreen Marine with its own Valencia office and regular Asia–Mediterranean container services via Valenciaport.',
+    tags:['Container Shipping','Asia–Med','Transpacific'], website:'https://www.evergreen-line.com',
+    logoInitials:'EVG', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2007', size:'Large' },
+
+  { id:17, name:'MSC Mediterranean Shipping',  category:'corporate',
+    description:'World\'s largest container shipping line operating MSC Terminal Valencia — equipped with Malaccamax cranes, acting as its primary west-Mediterranean transshipment hub.',
+    tags:['Container Shipping','Transshipment','Terminal'], website:'https://www.msc.com',
+    logoInitials:'MSC', logoBg:bg('red1'), logoColor:fg('red1'), founded:'1970', size:'Large' },
+
+  { id:18, name:'Grimaldi Group',              category:'corporate',
+    description:'European ro-ro and passenger ferry group with regular Valencia–Italy and Valencia–North Africa services, operating under both Grimaldi Lines and GNV brands.',
+    tags:['Ro-Ro','Ferries','Mediterranean'], website:'https://www.grimaldi-lines.com',
+    logoInitials:'GRM', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'1947', size:'Large' },
+
+  { id:19, name:'Maersk',                      category:'corporate',
+    description:'Global integrated logistics leader and one of the top container shipping lines at Valenciaport, offering end-to-end supply chain and cold-chain solutions.',
+    tags:['Container Shipping','Supply Chain','Reefer'], website:'https://www.maersk.com',
+    logoInitials:'MAE', logoBg:bg('green1'), logoColor:fg('green1'), founded:'1904', size:'Large' },
+
+  { id:20, name:'ACCIONA',                     category:'corporate',
+    description:'Spanish multinational delivering port logistics, green infrastructure and sustainability services at Valenciaport, with a strong programme in renewable maritime energy.',
+    tags:['Infrastructure','Sustainability','Port Services'], website:'https://www.acciona.com',
+    logoInitials:'ACC', logoBg:bg('teal1'), logoColor:fg('teal1'), founded:'1997', size:'Large' },
+
+  { id:21, name:'Armas Trasmediterránea',       category:'corporate',
+    description:'Spain\'s leading domestic ferry and ro-ro operator running regular sailings from Valencia to the Canary Islands, Balearics and North Africa.',
+    tags:['Domestic Ferries','Ro-Ro','Canaries'], website:'https://www.armastrasmediterranea.com',
+    logoInitials:'ATA', logoBg:bg('violet1'), logoColor:fg('violet1'), founded:'1917', size:'Large' },
+
+  { id:22, name:'Naturgy',                     category:'corporate',
+    description:'Major Spanish energy company providing LNG bunkering services at Valenciaport; completed Spain\'s first simultaneous two-ship LNG bunkering operation in Valencia.',
+    tags:['LNG Bunkering','Energy Transition','Gas'], website:'https://www.naturgy.com',
+    logoInitials:'NAT', logoBg:bg('green3'), logoColor:fg('green3'), founded:'1843', size:'Large' },
+
+  { id:23, name:'Kuehne+Nagel Spain',          category:'corporate',
+    description:'Leading global freight forwarder with a strong Valencia presence; recently acquired Spanish logistics provider TDN (45 terminals), reinforcing Valenciaport sea freight operations.',
+    tags:['Freight Forwarding','Sea Freight','3PL'], website:'https://www.kuehne-nagel.com',
+    logoInitials:'KNS', logoBg:bg('amber2'), logoColor:fg('amber2'), founded:'1890', size:'Large' },
+
+  { id:24, name:'DSV Spain',                   category:'corporate',
+    description:'World\'s largest freight forwarder (following 2024 Schenker acquisition) with extensive Valencia/Picassent facilities directly supporting Port of Valencia cargo flows.',
+    tags:['Freight Forwarding','Air & Sea','3PL'], website:'https://www.dsv.com',
+    logoInitials:'DSV', logoBg:bg('slate1'), logoColor:fg('slate1'), founded:'1976', size:'Large' },
+
+  { id:25, name:'Suardiaz Group',              category:'corporate',
+    description:'Spanish maritime group with Valencia office offering shipping agency, multimodal transport and ro-ro services for car carriers, bulk vessels and container ships.',
+    tags:['Shipping Agency','Ro-Ro','Multimodal'], website:'https://www.suardiaz.com',
+    logoInitials:'SUA', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'1936', size:'Medium' },
+
+  { id:26, name:'Moldtrans',                   category:'corporate',
+    description:'Valencia-headquartered international freight forwarder founded in 1979, one of Spain\'s most established operators with strong maritime and customs brokerage lines.',
+    tags:['Freight Forwarding','Customs','Logistics'], website:'https://www.moldtrans.com',
+    logoInitials:'MOL', logoBg:bg('sky2'), logoColor:fg('sky2'), founded:'1979', size:'Medium' },
+
+  { id:27, name:'Ership Group',                category:'corporate',
+    description:'Family-owned Spanish maritime company with 140 years of history offering port agency, chartering, customs and freight forwarding across all Spanish ports including Valencia.',
+    tags:['Port Agency','Chartering','Forwarding'], website:'https://www.ership.com',
+    logoInitials:'ERS', logoBg:bg('teal2'), logoColor:fg('teal2'), founded:'1884', size:'Medium' },
+
+  { id:28, name:'Ocean Network Express Spain', category:'corporate',
+    description:'Spanish subsidiary of ONE (the joint venture of MOL, K Line and NYK), registered in Valencia and serving the port community with Asia–Europe container services.',
+    tags:['Container Shipping','Asia–Europe','ONE'], website:'https://www.one-line.com',
+    logoInitials:'ONE', logoBg:bg('rose1'), logoColor:fg('rose1'), founded:'2018', size:'Large' },
+
+  { id:29, name:'Infoport Valencia',           category:'corporate',
+    description:'Port Community System provider founded at the Port of Valencia in 1998, serving 1,000+ companies and 6,000 daily users with track-and-trace and maritime transport scheduling.',
+    tags:['Port Community System','Digital','Track & Trace'], website:'https://www.infoport.es',
+    logoInitials:'INF', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'1998', size:'Medium' },
+
+  { id:30, name:'Marina Port Valencia',        category:'corporate',
+    description:'Integrated maritime hub on Valencia\'s waterfront with three marinas, dry dock, technical shipyard, coworking offices and retail — a Mediterranean nautical business centre.',
+    tags:['Marina','Nautical','Business Hub'], website:'https://marinaportvalencia.es',
+    logoInitials:'MPV', logoBg:bg('sky2'), logoColor:fg('sky2'), founded:'2007', size:'Medium' },
+
+  // STARTUPS
+  { id:40, name:'Canonical Green',             category:'startup',
+    description:'AI optimisation startup reducing carbon footprint of maritime transport through route and operations improvements. Opentop 1st cohort graduate and Valencia City Council €93K grant recipient.',
+    tags:['Decarbonisation','AI Routing','Opentop'], website:'https://canonicalgreen.com',
+    logoInitials:'CNG', logoBg:bg('green1'), logoColor:fg('green1'), founded:'2021', size:'Small' },
+
+  { id:41, name:'SensingTools',                category:'startup',
+    description:'UPV spin-off integrating physical sensors, citizen data and digital twins to build predictive environmental models for ports. Proof of concept at Port of Valencia.',
+    tags:['Digital Twin','IoT','Smart Port'], website:'https://sensingtools.es',
+    logoInitials:'SNT', logoBg:bg('teal1'), logoColor:fg('teal1'), founded:'2020', size:'Small' },
+
+  { id:42, name:'DMS Logistics',               category:'startup',
+    description:'AI platform predicting container dwell time and decongesting terminals to reduce port emissions. Opentop 1st Acceleration Programme graduate with proof of concept at Valenciaport.',
+    tags:['AI','Container Dwell','Emissions'], website:'https://dmslogistics.es',
+    logoInitials:'DMS', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2020', size:'Small' },
+
+  { id:43, name:'Gandolapp',                   category:'startup',
+    description:'Voice-enabled AI platform for truck drivers automating maritime-terrestrial intermodal planning. Opentop 1st cohort — proof of concept with CSP Spain terminal at Valenciaport.',
+    tags:['Trucking AI','Intermodal','Voice Tech'], website:'https://gandolapp.com',
+    logoInitials:'GND', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'2021', size:'Small' },
+
+  { id:44, name:'We Are Lab',                  category:'startup',
+    description:'Blue carbon startup planting Posidonia seagrass on port breakwaters to capture CO₂ and restore Mediterranean biodiversity. Opentop incubation graduate.',
+    tags:['Blue Carbon','Posidonia','Biodiversity'], website:'https://wearelab.es',
+    logoInitials:'WAL', logoBg:bg('teal2'), logoColor:fg('teal2'), founded:'2021', size:'Small' },
+
+  { id:45, name:'Greemko',                     category:'startup',
+    description:'SaaS platform for automatic evaluation of corporate environmental performance and greenhouse gas emissions. Opentop 1st Acceleration finalist serving maritime clients.',
+    tags:['ESG SaaS','GHG Accounting','Compliance'], website:'https://greemko.com',
+    logoInitials:'GRK', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2018', size:'Small' },
+
+  { id:46, name:'Sensefinity',                 category:'startup',
+    description:'IoT transformation company offering full-stack "Internet of Cargo" sensor solutions that standardise how maritime assets communicate throughout logistics processes. Opentop finalist.',
+    tags:['IoT','Cargo Tracking','Sensors'], website:'https://sensefinity.com',
+    logoInitials:'SFY', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2015', size:'Small' },
+
+  { id:47, name:'Aventra Group',               category:'startup',
+    description:'Advanced analytics, AI and ML consultancy applying data science to port operations, fleet performance and maritime supply chain optimisation. Opentop finalist.',
+    tags:['AI & ML','Analytics','Port Ops'], website:'https://aventragroup.com',
+    logoInitials:'AVG', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'2019', size:'Small' },
+
+  { id:48, name:'Block Shipping',              category:'startup',
+    description:'Blockchain-based platform creating a shared, transparent register for container management. Reduces cost and friction across 800M container movements per year. Opentop finalist.',
+    tags:['Blockchain','Containers','Transparency'], website:'https://blockshipping.io',
+    logoInitials:'BSP', logoBg:bg('violet1'), logoColor:fg('violet1'), founded:'2018', size:'Small' },
+
+  { id:50, name:'NextPort AI',                 category:'startup',
+    description:'AI and digital-twin startup for port and terminal optimisation; named among the "50 Most Innovative Maritime Startups 2024" by Thetius. Funded by Ports 4.0.',
+    tags:['AI','Digital Twin','Terminal Ops'], website:'https://nextport.ai',
+    logoInitials:'NXP', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'2020', size:'Small' },
+
+  { id:51, name:'Navozyme',                    category:'startup',
+    description:'Barcelona scaleup digitising maritime certification using blockchain and AI; recognised by the IMO for blockchain e-certificates. Ports 4.0 funded.',
+    tags:['Blockchain','Certification','IMO'], website:'https://navozyme.com',
+    logoInitials:'NVZ', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'2017', size:'Small' },
+
+  { id:52, name:'SEAPort Solutions',           category:'startup',
+    description:'Collaborative data-exchange platform automating reporting across all phases of ship port-call processes with real-time stakeholder visibility. Ports 4.0 beneficiary.',
+    tags:['Port Call','Data Exchange','PCS'], website:'https://seaport-solutions.com',
+    logoInitials:'SPT', logoBg:bg('sky2'), logoColor:fg('sky2'), founded:'2019', size:'Small' },
+
+  { id:53, name:'MION Technologies',           category:'startup',
+    description:'Spanish port tech startup; Ports 4.0 beneficiary for the VECTIN electric-vehicle-in-terminal project, with the final demonstration conducted at the Port of Valencia.',
+    tags:['Electric Vehicles','Terminal Ops','Ports 4.0'], website:'#',
+    logoInitials:'MON', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2020', size:'Small' },
+
+  { id:54, name:'SixSenso',                    category:'startup',
+    description:'Rapid in-situ detection system for microorganisms in port water, delivering results in under 3 hours. Ports 4.0 awardee for marine biosafety.',
+    tags:['BioSensing','Water Quality','Port Safety'], website:'https://sixsenso.com',
+    logoInitials:'6SN', logoBg:bg('teal1'), logoColor:fg('teal1'), founded:'2019', size:'Small' },
+
+  { id:55, name:'Carthago Coating',            category:'startup',
+    description:'Nanotechnology startup developing graphene-based antifouling and anticorrosion coatings for vessels, reducing fuel consumption and dry-dock frequency. Ports 4.0 funded.',
+    tags:['Nanotech','Antifouling','Graphene'], website:'https://carthagocoating.com',
+    logoInitials:'CRT', logoBg:bg('amber3'), logoColor:fg('amber3'), founded:'2020', size:'Small' },
+
+  { id:56, name:'CleverVolume',                category:'startup',
+    description:'Digital-twin solution estimating solid waste volume using 3D container replicas, streamlining port waste collection logistics. Ports 4.0 funded commercial project.',
+    tags:['Waste Management','Digital Twin','Circular Economy'], website:'#',
+    logoInitials:'CVL', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2021', size:'Small' },
+
+  { id:60, name:'SCM Nautic Services',         category:'startup',
+    description:'Blue economy startup based at Valencia Port offering marine maintenance and repair, offshore energy consultancy, shipbuilding advisory and professional maritime training.',
+    tags:['Blue Economy','Marine Maintenance','Offshore'], website:'https://scmnautica.com',
+    logoInitials:'SCM', logoBg:bg('teal2'), logoColor:fg('teal2'), founded:'2019', size:'Small' },
+
+  { id:61, name:'Fleequip',                    category:'startup',
+    description:'Maritime insurtech startup automating marine insurance and claims management workflows. Opentop alumni, digitally connecting ship operators with underwriters and adjusters.',
+    tags:['Insurtech','Marine Insurance','Claims'], website:'https://fleequip.com',
+    logoInitials:'FLQ', logoBg:bg('amber1'), logoColor:fg('amber1'), founded:'2020', size:'Small' },
+
+  { id:62, name:'i4sea',                       category:'startup',
+    description:'Climate risk and hyperlocal sea-and-weather forecasting platform used by ports, energy firms and coastal infrastructure operators worldwide. Presented at Opentop PEIC in Valencia.',
+    tags:['Climate Risk','Forecasting','MetOcean'], website:'https://i4sea.com',
+    logoInitials:'I4S', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2016', size:'Small' },
+
+  { id:63, name:'Magallanes Renovables',       category:'startup',
+    description:'Spanish pioneer in floating tidal stream energy; developed the ATIR tidal platform generating 1.5 MW from tidal currents. BlueInvest and Horizon Europe backed.',
+    tags:['Tidal Energy','Blue Renewables','BlueInvest'], website:'https://magallanesrenovables.com',
+    logoInitials:'MGR', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'2008', size:'Small' },
+
+  { id:64, name:'Ocean Ecostructure',          category:'startup',
+    description:'Blue biotech startup restoring marine biodiversity by integrating eco-structures into port and coastal infrastructure. BlueInvest-supported with €1.6M seed including Repsol Foundation.',
+    tags:['Blue Biotech','Biodiversity','Port Infra'], website:'https://oceanecostructure.com',
+    logoInitials:'OCE', logoBg:bg('green1'), logoColor:fg('green1'), founded:'2019', size:'Small' },
+
+  { id:65, name:'PortXchange',                 category:'startup',
+    description:'Port call optimisation platform piloted with the Port Authority of Valencia, enabling data-sharing between vessels, terminals and agents to cut port call emissions and time.',
+    tags:['Port Call Optimisation','Data Sharing','Emissions'], website:'https://portxchange.com',
+    logoInitials:'PXC', logoBg:bg('blue2'), logoColor:fg('blue2'), founded:'2018', size:'Small' },
+
+  { id:66, name:'Metaenlace',                  category:'startup',
+    description:'Spanish IoT and data management platform for port operations, connecting edge devices with cloud analytics for real-time visibility of port assets. Ports 4.0 participant.',
+    tags:['IoT','Port Operations','Edge Computing'], website:'https://metaenlace.com',
+    logoInitials:'MTE', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'2018', size:'Small' },
+
+  { id:67, name:'S4 MAR',                      category:'startup',
+    description:'Valencia-based specialist maritime insurance broker providing marine cargo, hull and liability covers to the Port of Valencia community.',
+    tags:['Marine Insurance','Cargo','Hull & Liability'], website:'https://s4mar.com',
+    logoInitials:'S4M', logoBg:bg('rose1'), logoColor:fg('rose1'), founded:'2015', size:'Small' },
+
+  { id:68, name:'ValenciaportPCS',             category:'startup',
+    description:'Port Community System operator providing digital services — track-and-trace, maritime transport scheduling and community access — for all Port of Valencia stakeholders.',
+    tags:['PCS','Digital Port','Track & Trace'], website:'https://valenciaportpcs.com',
+    logoInitials:'VPC', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'2002', size:'Small' },
+
+  // INVESTORS
+  { id:80, name:'Invest in Valencia',          category:'investor',
+    description:'Public investment promotion agency attracting FDI to Valencia, supporting international startups and scaleups looking to establish or scale in the region.',
+    tags:['FDI','Investment Promotion','Scaleup'], website:'https://www.investinvalencia.com',
+    logoInitials:'IiV', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2010', size:'Medium' },
+
+  { id:81, name:'Ports 4.0',                  category:'investor',
+    description:'State Ports-managed open innovation fund — €53.75M across 6 calls, funding 108 ideas, 47 pre-commercial and 37 commercial projects in port-maritime innovation.',
+    tags:['Innovation Fund','Port Tech','R&D Grants'], website:'https://ports40.es',
+    logoInitials:'P40', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'2020', size:'Large' },
+
+  { id:82, name:'CDTI',                        category:'investor',
+    description:'Spanish public agency providing R&D loans, NEOTEC grants (up to €325K) and co-investment for tech companies. Hosted a joint maritime innovation conference with Fundación Valenciaport in 2025.',
+    tags:['R&D Loans','NEOTEC','Tech Grants'], website:'https://www.cdti.es',
+    logoInitials:'CDT', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'1977', size:'Large' },
+
+  { id:83, name:'IVACE',                       category:'investor',
+    description:'Valencian regional competitiveness agency providing grants, loans and innovation co-financing to companies in Valencia, including direct support for Fundación Valenciaport projects.',
+    tags:['Regional Grants','Valencia','SME Support'], website:'https://www.ivace.es',
+    logoInitials:'IVC', logoBg:bg('amber1'), logoColor:fg('amber1'), founded:'2012', size:'Medium' },
+
+  { id:84, name:'AVI',                         category:'investor',
+    description:'Agència Valenciana de la Innovació — Valencia\'s innovation agency funding R&D projects, listed as a direct co-funder of Fundación Valenciaport programmes.',
+    tags:['Regional R&D','Valencia','Innovation'], website:'https://www.avi.gva.es',
+    logoInitials:'AVI', logoBg:bg('amber3'), logoColor:fg('amber3'), founded:'2017', size:'Medium' },
+
+  { id:85, name:'ENISA',                       category:'investor',
+    description:'Spanish state company providing participatory loans (€25K–€300K) to innovative startups; €303M allocated for 2025–2026, a primary mechanism for Spanish maritime tech founders.',
+    tags:['Participatory Loans','Startup Finance','Spain'], website:'https://www.enisa.es',
+    logoInitials:'ENI', logoBg:bg('green1'), logoColor:fg('green1'), founded:'1982', size:'Large' },
+
+  { id:86, name:'ICO',                         category:'investor',
+    description:'Spain\'s state development bank providing subsidised loans, guarantees and export financing for business investment, including maritime infrastructure and logistics companies.',
+    tags:['Development Bank','Loans','Export Finance'], website:'https://www.ico.es',
+    logoInitials:'ICO', logoBg:bg('blue2'), logoColor:fg('blue2'), founded:'1971', size:'Large' },
+
+  { id:87, name:'BlueInvest (EU / EMFAF)',     category:'investor',
+    description:'EU platform and technical assistance facility under EMFAF; coached 300+ blue economy companies and facilitated €300M+ in private investment since 2019.',
+    tags:['Blue Economy','EU Grants','EMFAF'], website:'https://blueinvest-community.converve.io',
+    logoInitials:'BIV', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2019', size:'Large' },
+
+  { id:88, name:'European Investment Fund',    category:'investor',
+    description:'EU body providing risk finance for SMEs; co-anchors blue economy VC funds under InvestEU with a dedicated €75M Blue Economy equity allocation for Southern European funds.',
+    tags:['EU VC Co-invest','InvestEU','Blue Economy'], website:'https://www.eif.org',
+    logoInitials:'EIF', logoBg:bg('violet1'), logoColor:fg('violet1'), founded:'1994', size:'Large' },
+
+  { id:89, name:'European Investment Bank',    category:'investor',
+    description:'EU\'s long-term lending institution; invested €12.9B in sustainable blue economy operations 2021–2025 and co-anchors a €500M InvestEU blue economy equity vehicle.',
+    tags:['Infrastructure Finance','Blue Economy','EU'], website:'https://www.eib.org',
+    logoInitials:'EIB', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'1958', size:'Large' },
+
+  { id:90, name:'EMFAF',                       category:'investor',
+    description:'European Maritime, Fisheries and Aquaculture Fund — 2021–2027 EU structural fund underpinning BlueInvest, the Sustainable Blue Economy Partnership and direct grants to maritime SMEs.',
+    tags:['EU Structural Fund','Maritime Grants','Blue Economy'], website:'https://oceans-and-fisheries.ec.europa.eu',
+    logoInitials:'EMF', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'2021', size:'Large' },
+
+  { id:91, name:'GoHub Ventures',              category:'investor',
+    description:'€90M Valencia-based VC fund backed by Global Omnium, investing in high-tech B2B software startups globally with a strong local maritime and logistics ecosystem presence.',
+    tags:['Venture Capital','B2B SaaS','Valencia'], website:'https://www.gohub.vc',
+    logoInitials:'GHV', logoBg:bg('purple1'), logoColor:fg('purple1'), founded:'2019', size:'Medium' },
+
+  { id:92, name:'Lanzadera',                   category:'investor',
+    description:'Juan Roig / Mercadona-backed startup accelerator-investor in Valencia. Has supported 1,600+ companies since 2013 with capital, mentoring and Juan Roig\'s network.',
+    tags:['Accelerator VC','Valencia','Early Stage'], website:'https://lanzadera.es',
+    logoInitials:'LZD', logoBg:bg('amber2'), logoColor:fg('amber2'), founded:'2013', size:'Medium' },
+
+  { id:93, name:'Wayra (Telefónica)',           category:'investor',
+    description:'Telefónica\'s global corporate venture capital and co-lead mentor of Opentop\'s acceleration programme. Invests in IoT, AI and B2B tech across Spain and Latin America.',
+    tags:['Corporate VC','IoT & AI','Opentop Partner'], website:'https://www.wayra.com',
+    logoInitials:'WAY', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'2011', size:'Large' },
+
+  { id:94, name:'Plug and Play Spain',         category:'investor',
+    description:'Global accelerator and VC with active Valencia presence; focuses on Supply Chain & Logistics and is a listed Startup Valencia ecosystem partner.',
+    tags:['Global VC','Supply Chain','Accelerator'], website:'https://www.plugandplaytechcenter.com',
+    logoInitials:'PNP', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2006', size:'Large' },
+
+  { id:95, name:'Indico Capital — Blue Fund',  category:'investor',
+    description:'Portuguese early-stage VC with a dedicated €50M Blue Fund for ocean and blue economy startups in Portugal and Spain. BlueInvest partner and EIF-backed.',
+    tags:['Blue Economy VC','Iberia','EIF-backed'], website:'https://www.indicocapital.com',
+    logoInitials:'IDC', logoBg:bg('sky2'), logoColor:fg('sky2'), founded:'2016', size:'Medium' },
+
+  { id:96, name:'Growth Blue I',               category:'investor',
+    description:'First private equity blue economy fund in Southern Europe (€28M), backed by EIF under InvestEU, explicitly targeting SMEs from Spain and Portugal.',
+    tags:['Private Equity','Blue Economy','Iberia'], website:'https://www.eif.org',
+    logoInitials:'GBL', logoBg:bg('teal1'), logoColor:fg('teal1'), founded:'2023', size:'Medium' },
+
+  { id:97, name:'Seaya Ventures',              category:'investor',
+    description:'Madrid-based leading Spanish VC investing in impact and growth-stage tech companies across Spain and Latin America — key route to Series A for Spanish maritime scaleups.',
+    tags:['Impact VC','Growth Stage','Series A/B'], website:'https://www.seaya.vc',
+    logoInitials:'SVY', logoBg:bg('purple2'), logoColor:fg('purple2'), founded:'2013', size:'Medium' },
+
+  { id:98, name:'K Fund',                      category:'investor',
+    description:'Spanish seed and Series A VC (€50M+) focused on startups with international ambitions, investing €100K–€2M tickets in tech including logistics and maritime SaaS.',
+    tags:['Seed & Series A','Spain','Early Stage'], website:'https://www.kfund.vc',
+    logoInitials:'KFD', logoBg:bg('amber4'), logoColor:fg('amber4'), founded:'2016', size:'Medium' },
+
+  { id:99, name:'Inveready',                   category:'investor',
+    description:'Barcelona-based alternative investment firm (143 active companies, €600M+ AUM) across IT, life sciences, venture debt and PE — one of Spain\'s most active tech investors.',
+    tags:['Venture Debt','IT & LS','Spain'], website:'https://www.inveready.com',
+    logoInitials:'IRY', logoBg:bg('rose1'), logoColor:fg('rose1'), founded:'2008', size:'Medium' },
+
+  { id:100, name:'Nauta Capital',              category:'investor',
+    description:'Barcelona/London VC investing in early-stage B2B SaaS across Europe — a key investor profile for port tech, maritime AI and logistics software startups.',
+    tags:['B2B SaaS','Early Stage','Europe'], website:'https://www.nautacapital.com',
+    logoInitials:'NCA', logoBg:bg('blue1'), logoColor:fg('blue1'), founded:'2004', size:'Medium' },
+
+  { id:101, name:'Samaipata Ventures',         category:'investor',
+    description:'Pan-European VC ($160M+ AUM) specialising in digital platforms with network effects — relevant for maritime marketplace and logistics platform models.',
+    tags:['Platform VC','Network Effects','Europe'], website:'https://www.samaipata.vc',
+    logoInitials:'SAM', logoBg:bg('green3'), logoColor:fg('green3'), founded:'2016', size:'Medium' },
+
+  { id:102, name:'BStartup (Banco Sabadell)',  category:'investor',
+    description:'Banco Sabadell\'s startup investment programme backing early-stage tech companies in Spain; a key maritime ecosystem funder listed on Startup Valencia.',
+    tags:['Bank VC','Early Stage','Spain'], website:'https://www.bstartup.com',
+    logoInitials:'BSB', logoBg:bg('teal2'), logoColor:fg('teal2'), founded:'2013', size:'Large' },
+
+  { id:103, name:'DayOne (CaixaBank)',         category:'investor',
+    description:'CaixaBank\'s service supporting young startups across Spain with banking products, investment connections and ecosystem access.',
+    tags:['Bank Venture','Spain','Startup Banking'], website:'https://www.caixabank.es/dayone',
+    logoInitials:'CXB', logoBg:bg('sky1'), logoColor:fg('sky1'), founded:'2017', size:'Large' },
+
+  { id:104, name:'Meridia Capital',            category:'investor',
+    description:'Barcelona-based alternative investment manager; acquired logistics land in Aldaia on Valencia\'s port-logistics corridor, with active deployment in Spanish logistics real estate.',
+    tags:['Logistics Real Estate','Valencia A2','PE'], website:'https://www.meridiacapital.com',
+    logoInitials:'MDC', logoBg:bg('amber5'), logoColor:fg('amber5'), founded:'2010', size:'Medium' },
+
+  { id:105, name:'Hatch Blue',                 category:'investor',
+    description:'European blue economy VC with a €20M Blue Revolution Fund (EIF/InvestEU 2024) targeting early-stage aquaculture and ocean food startups across Europe.',
+    tags:['Aquaculture VC','Blue Food','EIF-backed'], website:'https://www.hatchblue.com',
+    logoInitials:'HTC', logoBg:bg('cyan1'), logoColor:fg('cyan1'), founded:'2018', size:'Small' },
+
+  { id:106, name:'Astanor Ventures',           category:'investor',
+    description:'European impact VC backing sustainable food and agri-ocean companies; one of the two funds receiving EIF\'s dedicated BlueInvest equity allocation for blue economy.',
+    tags:['Impact VC','Blue Food','EIF BlueInvest'], website:'https://www.astanor.com',
+    logoInitials:'AST', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2017', size:'Medium' },
+
+  { id:107, name:'Azora Capital',              category:'investor',
+    description:'Spanish real-asset investment firm (€100M+ logistics portfolio) managing warehousing and logistics assets on Valencia\'s A2 corridor, adjacent to port logistics flows.',
+    tags:['Logistics Real Estate','Valencia A2','Infrastructure'], website:'https://www.azora.com',
+    logoInitials:'AZR', logoBg:bg('amber2'), logoColor:fg('amber2'), founded:'2003', size:'Large' },
+
+  { id:108, name:'Sustainable Blue Economy Partnership', category:'investor',
+    description:'EU Horizon Europe co-funded R&I partnership with €325M+ in maritime investment; launched first 19-project cohort in Spain in 2024. Fundación Valenciaport holds active projects.',
+    tags:['Horizon Europe','R&I','Maritime R&D'], website:'https://bluepartnership.eu',
+    logoInitials:'SBP', logoBg:bg('indigo2'), logoColor:fg('indigo2'), founded:'2022', size:'Large' },
+
+  // ACCELERATORS
+  { id:120, name:'Opentop',                    category:'accelerator',
+    description:'Open innovation hub of Valenciaport, co-created by PAV and Valenciaport Foundation. Connects startups with real port challenges; runs incubation, acceleration and the PEIC congress.',
+    tags:['Open Innovation','Port Challenges','PEIC'], website:'https://www.opentop.es',
+    logoInitials:'OT', logoBg:bg('pink2'), logoColor:fg('pink2'), founded:'2018', size:'Small' },
+
+  { id:121, name:'Startup Valencia',           category:'accelerator',
+    description:'Valencia\'s leading private startup association, connecting 3,000+ startups to global capital and talent; organises the annual Valencia Digital Summit (VDS) with 12,000+ attendees.',
+    tags:['Startup Community','VDS','Networking'], website:'https://startupvalencia.org',
+    logoInitials:'SV', logoBg:bg('amber1'), logoColor:fg('amber1'), founded:'2017', size:'Medium' },
+
+  { id:122, name:'Marina de Empresas',         category:'accelerator',
+    description:'Leading entrepreneurship campus on Valencia\'s waterfront founded by Juan Roig; trains, advises and co-invests in early-stage startups through Lanzadera, Angels and EDEM.',
+    tags:['Campus','Early Stage','Juan Roig'], website:'https://marinaempresas.com',
+    logoInitials:'MdE', logoBg:bg('amber4'), logoColor:fg('amber4'), founded:'2012', size:'Medium' },
+
+  { id:123, name:'Imarport',                   category:'accelerator',
+    description:'Office for promoting and financing maritime cluster innovation, set up by Valenciaport Foundation in 2023, helping companies access R&D grants for digitalisation and energy transition.',
+    tags:['R&D Grants','Port Cluster','Innovation Finance'], website:'https://www.fundacion.valenciaport.com/en/imarport/',
+    logoInitials:'IMP', logoBg:bg('indigo1'), logoColor:fg('indigo1'), founded:'2023', size:'Small' },
+
+  { id:124, name:'Innsomnia',                  category:'accelerator',
+    description:'Spain\'s first fintech and insurtech incubator and accelerator, based in Valencia; relevant for maritime fintech, insurance and trade finance startups in the port ecosystem.',
+    tags:['Fintech','Insurtech','Valencia'], website:'https://www.innsomnia.es',
+    logoInitials:'INS', logoBg:bg('rose2'), logoColor:fg('rose2'), founded:'2014', size:'Small' },
+
+  // NETWORKS
+  { id:130, name:'Asociación Naviera Valenciana', category:'network',
+    description:'Professional association representing shipping agents and maritime companies at the Port of Valencia, advocating for port efficiency and sector competitiveness.',
+    tags:['Shipping Agents','Advocacy','Trade'], website:'https://startupvalencia.org/directory/asociacion-naviera-valenciana/',
+    logoInitials:'ANV', logoBg:bg('blue3'), logoColor:fg('blue3'), founded:'1990', size:'Small' },
+
+  { id:131, name:'Port Innovators Network',    category:'network',
+    description:'Global network connecting port innovation hubs — including Hamburg, Halifax and Valencia via Opentop — to share methodologies, hackathons and best practices.',
+    tags:['Global Network','Port Innovation','Knowledge'], website:'https://www.linkedin.com/company/port-innovators-network/',
+    logoInitials:'PIN', logoBg:bg('green2'), logoColor:fg('green2'), founded:'2021', size:'Small' },
+
+  { id:132, name:'MELYT',                      category:'network',
+    description:'Association of Women in Logistics and Transport, partnering with Valenciaport Foundation to drive gender equality and inclusive leadership in the maritime sector.',
+    tags:['Gender Equality','Logistics','Talent'], website:'https://www.melyt.es',
+    logoInitials:'MLT', logoBg:bg('pink1'), logoColor:fg('pink1'), founded:'2015', size:'Small' },
+
+  { id:133, name:'Valencia Digital Summit',    category:'network',
+    description:'One of Europe\'s leading annual tech events (12,000+ attendees, 3,000 startups, 800+ investors) positioning Valencia as a global innovation bridge between Europe, LatAm and the US.',
+    tags:['Tech Event','12K Attendees','LatAm Bridge'], website:'https://vds.tech',
+    logoInitials:'VDS', logoBg:bg('amber3'), logoColor:fg('amber3'), founded:'2017', size:'Large' },
+];
+
+function getCat(id) { return CATEGORIES.find(c => c.id === id); }
+function countFor(catId) {
+  if (catId === 'all') return ENTITIES.length;
+  return ENTITIES.filter(e => e.category === catId).length;
+}
+
+const IconList   = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+const IconGrid   = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
+const IconSearch = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+const IconX      = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const IconLink   = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>;
+
+function EntityLogo({ entity, size = 'md' }) {
+  const cls = size === 'lg' ? 'w-14 h-14 text-sm' : 'w-10 h-10 text-xs';
+  return (
+    <div className={`${cls} rounded-xl flex items-center justify-center font-bold flex-shrink-0 select-none`}
+         style={{ background: entity.logoBg, color: entity.logoColor }}>
+      {entity.logoInitials}
+    </div>
+  );
+}
+
+function EntityRow({ entity }) {
+  const cat = getCat(entity.category);
+  return (
+    <div className="entity-row flex items-center gap-4 px-5 py-4 border-b border-gray-100 last:border-b-0">
+      <EntityLogo entity={entity} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+          <span className="font-semibold text-gray-900 text-sm">{entity.name}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: entity.logoBg, color: entity.logoColor }}>{cat.label}</span>
+          {entity.founded && <span className="text-xs text-gray-400">Est. {entity.founded}</span>}
+        </div>
+        <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{entity.description}</p>
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {entity.tags.map(t => <span key={t} className="text-xs bg-gray-50 text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded">{t}</span>)}
+        </div>
+      </div>
+      {entity.website && entity.website !== '#' && (
+        <a href={entity.website} target="_blank" rel="noopener noreferrer"
+           className="flex-shrink-0 flex items-center gap-1 text-xs font-medium hover:underline" style={{ color: entity.logoColor }}>
+          Visit <IconLink />
+        </a>
+      )}
+    </div>
+  );
+}
+
+function EntityCard({ entity }) {
+  const cat = getCat(entity.category);
+  return (
+    <div className="entity-card bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <EntityLogo entity={entity} size="lg" />
+        {entity.website && entity.website !== '#' && (
+          <a href={entity.website} target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-1 text-xs font-medium hover:underline mt-1" style={{ color: entity.logoColor }}>
+            Visit <IconLink />
+          </a>
+        )}
+      </div>
+      <div>
+        <h3 className="font-semibold text-gray-900 text-sm leading-snug">{entity.name}</h3>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <span className="inline-block text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: entity.logoBg, color: entity.logoColor }}>{cat.label}</span>
+          {entity.founded && <span className="text-xs text-gray-400">Est. {entity.founded}</span>}
+        </div>
+      </div>
+      <p className="text-gray-500 text-xs leading-relaxed flex-1">{entity.description}</p>
+      <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-50">
+        {entity.tags.map(t => <span key={t} className="text-xs bg-gray-50 text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded">{t}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ search }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
+      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-300"><IconSearch /></div>
+      {search
+        ? <><p className="text-sm font-medium text-gray-600">No results for "{search}"</p><p className="text-xs text-gray-400 mt-1">Try a different term or clear the category filter.</p></>
+        : <p className="text-sm text-gray-500">No organisations found.</p>}
+    </div>
+  );
+}
+
+function App() {
+  const [view,           setView]           = useState('list');
+  const [search,         setSearch]         = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return ENTITIES.filter(e => {
+      const matchCat    = activeCategory === 'all' || e.category === activeCategory;
+      const matchSearch = !q || e.name.toLowerCase().includes(q) || e.description.toLowerCase().includes(q) || e.tags.some(t => t.toLowerCase().includes(q));
+      return matchCat && matchSearch;
+    });
+  }, [search, activeCategory]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="sticky top-0 z-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center gap-4">
+          <a href="https://maritime-venture.com" target="_blank" rel="noopener noreferrer"
+             className="flex items-center gap-2.5 mr-1 flex-shrink-0">
+            <div className="w-7 h-7 rounded-md bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/>
+                <path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+              </svg>
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-xs font-bold text-gray-900 leading-tight">300 Maritime Valencia</div>
+              <div className="text-xs text-gray-400 leading-tight">Ecosystem Directory</div>
+            </div>
+          </a>
+
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+            {[['list','List',<IconList/>],['gallery','Gallery',<IconGrid/>]].map(([v,l,icon])=>(
+              <button key={v} onClick={()=>setView(v)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${view===v?'bg-white text-gray-900 shadow-sm':'text-gray-500 hover:text-gray-700'}`}>
+                {icon} {l}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative flex-1 max-w-sm">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"><IconSearch /></div>
+            <input type="text" placeholder="Search organisations..." value={search} onChange={e=>setSearch(e.target.value)}
+              className="w-full pl-9 pr-7 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 bg-gray-50 transition-all"/>
+            {search && <button onClick={()=>setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><IconX /></button>}
+          </div>
+
+          <div className="ml-auto hidden sm:flex items-center gap-1.5 text-xs text-gray-400 flex-shrink-0">
+            <span className="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+            Valencia, Spain
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto px-5 pt-5 pb-16">
+        <p className="text-xs text-gray-400 mb-4">
+          Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of {ENTITIES.length} organisations
+        </p>
+
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="border-b border-gray-100">
+            <div className="flex overflow-x-auto">
+              {CATEGORIES.map(cat => {
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button key={cat.id} onClick={()=>setActiveCategory(cat.id)}
+                    className={`cat-tab flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 -mb-px ${isActive?'border-gray-900 text-gray-900':'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                    {cat.label}
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${isActive?'bg-gray-900 text-white':'bg-gray-100 text-gray-500'}`}>{countFor(cat.id)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="px-5 py-2.5 text-xs text-gray-400 bg-gray-50 border-b border-gray-100">
+            {getCat(activeCategory)?.desc}
+          </div>
+
+          {view==='list' && (
+            <div>
+              {filtered.length===0 ? <EmptyState search={search}/> : filtered.map(e=><EntityRow key={e.id} entity={e}/>)}
+            </div>
+          )}
+
+          {view==='gallery' && (
+            <div className="p-5">
+              {filtered.length===0
+                ? <EmptyState search={search}/>
+                : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filtered.map(e=><EntityCard key={e.id} entity={e}/>)}
+                  </div>
+              }
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400">
+            <a href="https://maritime-venture.com" target="_blank" rel="noopener noreferrer"
+               className="font-medium text-gray-600 hover:text-gray-900">maritime-venture.com</a>
+            {' '}· Valencia Maritime Innovation Ecosystem ·{' '}
+            <a href="mailto:ecosistema@valenciaport.com" className="hover:text-gray-600">Submit an organisation ↗</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
